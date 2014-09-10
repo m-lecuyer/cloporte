@@ -1,6 +1,11 @@
 (ns cloporte.core)
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn serialize
+  ""
+  [& args]
+  (map nil nil))
+
+(defmacro perform-async
+  "Enqueues the job on cloporte's redis queue."
+  [function & args]
+  nil)
