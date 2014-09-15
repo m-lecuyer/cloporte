@@ -39,14 +39,19 @@
              => "arg: bar"
              (core/perform-job (core/serialize '(cloporte.helpers.functions/foo "bar")))
              => "arg: bar")
-       (with-redefs [core/enqueue-job (fn [opts json] json)]
+       (with-redefs
+         [core/enqueue-job (fn [opts json] json)]
          (fact "it works end to end with right namespace going through
                 the perform-async macro"
                (core/perform-job (core/unmarshal (core/perform-async (foo "bar"))))
                => "bar"
-               (core/perform-job (core/unmarshal (core/perform-async (cloporte.t-core/foo "bar"))))
+               (-> (core/perform-async  (cloporte.t-core/foo "bar"))
+                   core/unmarshal
+                   core/perform-job)
                => "bar"
                (core/perform-job (core/unmarshal (core/perform-async (fns/foo "bar"))))
                => "arg: bar"
-               (core/perform-job (core/unmarshal (core/perform-async (cloporte.helpers.functions/foo "bar"))))
+               (-> (core/perform-async  (cloporte.helpers.functions/foo "bar"))
+                   core/unmarshal
+                   core/perform-job)
                => "arg: bar")))
