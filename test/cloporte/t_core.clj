@@ -1,18 +1,17 @@
 (ns cloporte.t-core
   (:use midje.sweet)
-  (:require [clojure.test :refer :all]
-            [cloporte.core :as core]
+  (:require [cloporte.core :as core]
             [cloporte.helpers.functions :as fns]))
 
 (defn foo [arg] arg)
 
 (facts "about the `marshal` function"
        (fact "it returns right function, namespace and arguments"
-             (core/marshal '(foo "bar"))
+             (core/serialize '(foo "bar"))
              => {:ns   "cloporte.t-core"
                  :fn   "foo"
                  :args ["bar"]}
-             (core/marshal '(cloporte.helpers.functions/foo "bar"))
+             (core/serialize '(cloporte.helpers.functions/foo "bar"))
              => {:ns   "cloporte.helpers.functions"
                  :fn   "foo"
                  :args ["bar"]}))
@@ -31,12 +30,23 @@
              => "arg: bar"))
 
 (facts "about performing a job through serialization"
-       (fact "it works end to end with right namespace"
-             (core/perform-job (core/marshal '(foo "bar")))
+       (fact "it works end to end with right namespace going through serialize"
+             (core/perform-job (core/serialize '(foo "bar")))
              => "bar"
-             (core/perform-job (core/marshal '(cloporte.t-core/foo "bar")))
+             (core/perform-job (core/serialize '(cloporte.t-core/foo "bar")))
              => "bar"
-             (core/perform-job (core/marshal '(fns/foo "bar")))
+             (core/perform-job (core/serialize '(fns/foo "bar")))
              => "arg: bar"
-             (core/perform-job (core/marshal '(cloporte.helpers.functions/foo "bar")))
-             => "arg: bar"))
+             (core/perform-job (core/serialize '(cloporte.helpers.functions/foo "bar")))
+             => "arg: bar")
+       (with-redefs [core/enqueue-job (fn [opts json] json)]
+         (fact "it works end to end with right namespace going through
+                the perform-async macro"
+               (core/perform-job (core/unmarshal (core/perform-async (foo "bar"))))
+               => "bar"
+               (core/perform-job (core/unmarshal (core/perform-async (cloporte.t-core/foo "bar"))))
+               => "bar"
+               (core/perform-job (core/unmarshal (core/perform-async (fns/foo "bar"))))
+               => "arg: bar"
+               (core/perform-job (core/unmarshal (core/perform-async (cloporte.helpers.functions/foo "bar"))))
+               => "arg: bar")))

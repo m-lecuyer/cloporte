@@ -14,7 +14,7 @@
 ;; TODO support functions as arguments?
 ;; TODO support func not defined
 ;; TODO very args a serializable in json?
-(defn marshal
+(defn serialize
   "Serializes a function call into a hash-map."
   [function-call-list]
   (let [func-meta (-> function-call-list first resolve meta)]
@@ -22,25 +22,31 @@
      :fn   (-> func-meta :name str)                ;; func fully qulified name
      :args (into [] (rest function-call-list))}))  ;; arguments
 
+(defn marshal
+  "Serializes and json encodes."
+  [function-call-list]
+  (-> function-call-list
+      serialize
+      json/write-str))
+
 ;; TODO error checking and handle/return errors
 (defmacro perform-async
   "Enqueues the job on cloporte's redis queue."
   [function-call & options]
   `(->> (quote ~function-call)
         marshal
-        json/write-str
         (enqueue-job ~options)))
 
 ;; TODO don't transform stings to keywords in args?
 (defn unmarshal
   "Desirializes the job-json."
   [job-json]
-  (json/read-str job-json))
+  (json/read-str job-json :key-fn keyword))
 
 (defn perform-job
   "Runs the function and args in the job."
   [job]
   ;; TODO check the namespace is already required?
-  (require (symbol (:ns job)))
+  ; (require (symbol (:ns job)))
   (apply (resolve (symbol (:ns job) (:fn job)))
          (into () (:args job))))
