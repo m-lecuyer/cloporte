@@ -1,11 +1,12 @@
 (ns cloporte.t-core
   (:use midje.sweet)
   (:require [cloporte.core :as core]
-            [cloporte.helpers.functions :as fns]))
+            [cloporte.helpers.functions :as fns]
+            [clojure.data.json :as json]))
 
 (defn foo [arg] arg)
 
-(facts "about the `marshal` function"
+(facts "about the `serialize` function"
        (fact "it returns right function, namespace and arguments"
              (core/serialize '(foo "bar"))
              => {:ns   "cloporte.t-core"
@@ -39,7 +40,7 @@
              => "arg: bar"
              (core/perform-job (core/serialize '(cloporte.helpers.functions/foo "bar")))
              => "arg: bar")
-       (with-redefs
+       (with-redefs  ;; careful, not parallelizable
          [core/enqueue-job (fn [opts json] json)]
          (fact "it works end to end with right namespace going through
                 the perform-async macro"

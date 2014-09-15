@@ -22,12 +22,8 @@
      :fn   (-> func-meta :name str)                ;; func fully qulified name
      :args (into [] (rest function-call-list))}))  ;; arguments
 
-(defn marshal
-  "Serializes and json encodes."
-  [function-call-list]
-  (-> function-call-list
-      serialize
-      json/write-str))
+;; serializes and json encodes.
+(def marshal (comp json/write-str serialize))
 
 ;; TODO error checking and handle/return errors
 (defmacro perform-async
@@ -47,6 +43,6 @@
   "Runs the function and args in the job."
   [job]
   ;; TODO check the namespace is already required?
-  ; (require (symbol (:ns job)))
+  (require (symbol (:ns job)))
   (apply (resolve (symbol (:ns job) (:fn job)))
          (into () (:args job))))
