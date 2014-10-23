@@ -42,7 +42,7 @@
              => "arg: bar"
              (s/perform-job (s/serialize '(cloporte.helpers.functions/foo "bar")))
              => "arg: bar")
-       (with-redefs  ;; careful, not parallelizable
+       (with-redefs  ;; /!\ careful, not parallelizable
          [q/enqueue-job (fn [opts json] json)]
          (fact "it works end to end with right namespace going through
                 the perform-async macro"
