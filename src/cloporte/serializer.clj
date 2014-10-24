@@ -2,14 +2,14 @@
 
 ;; TODO support functions as arguments?
 ;; TODO support func not defined
-;; TODO very args a serializable in json?
+;; TODO verify args are serializable in json?
 (defn serialize
   "Serializes a function call into a hash-map."
-  [function-call-list]
-  (let [func-meta (-> function-call-list first resolve meta)]
+  [function-call & args]
+  (let [func-meta (-> function-call resolve meta)]
     {:ns   (-> func-meta :ns str)                  ;; namespave of func
      :fn   (-> func-meta :name str)                ;; func fully qulified name
-     :args (into [] (rest function-call-list))}))  ;; arguments
+     :args (into [] args)}))  ;; arguments
 
 (defn perform-job
   "Runs the function and args in the job."

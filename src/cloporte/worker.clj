@@ -14,4 +14,8 @@
                                   {:status :success})
                      :nthreads (Integer. nthreads)})))
 
-; (redis-mq/stop my-worker)
+(defn stop-worker [worker] (redis-mq/stop worker))
+
+(defn queue-status [qname] (redis-mq/queue-status nil qname))
+
+(defn queue-empty? [qname] (empty? (:messages (queue-status qname))))
