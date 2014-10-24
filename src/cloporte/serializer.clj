@@ -17,4 +17,4 @@
   ;; TODO check the namespace is already required?
   (require (symbol (:ns job)))
   (apply (resolve (symbol (:ns job) (:fn job)))
-         (into () (:args job))))
+         (reverse (into () (:args job)))))

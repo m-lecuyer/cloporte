@@ -18,4 +18,9 @@
 
 (defn queue-status [qname] (redis-mq/queue-status nil qname))
 
-(defn queue-empty? [qname] (empty? (:messages (queue-status qname))))
+(defn queue-empty? [qname]
+  (empty? (:messages (queue-status qname))))
+
+(defn queued-messages [qname]
+  (count (:messages (queue-status qname))))
+
