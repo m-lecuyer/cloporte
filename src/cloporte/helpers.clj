@@ -20,5 +20,5 @@
 
 (defmacro redis-worker
   "Starts a multi-threaded worker to consume jobs from agiven queue."
-  [queue nthreads opts]
-  `(redis-mq/worker (redis-state/config) queue ~opts))
+  [queue opts]
+  `(redis-mq/worker (redis-state/config) ~queue ~opts))

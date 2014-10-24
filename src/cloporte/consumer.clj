@@ -16,6 +16,7 @@
   ([] (start-worker :default 1))
   ([nthreads] (start-worker :default nthreads))
   ([queue nthreads]
-   (helpers/redis-worker {:handler  (fn  [{:keys  [message attempt]}]
-                                      (perform-job message)
+   (helpers/redis-worker queue
+                         {:handler (fn [{:keys  [message attempt]}]
+                                     (perform-job message)
                                       {:status :success})})))

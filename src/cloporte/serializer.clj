@@ -14,7 +14,6 @@
 (defn perform-job
   "Runs the function and args in the job."
   [job]
-  ;; TODO check the namespace is already required?
   (require (symbol (:ns job)))
   (apply (resolve (symbol (:ns job) (:fn job)))
          (reverse (into () (:args job)))))
