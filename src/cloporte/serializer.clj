@@ -3,6 +3,7 @@
 ;; TODO support functions as arguments?
 ;; TODO support func not defined
 ;; TODO verify args are serializable in json?
+;; TODO verify we have a symbol the is fn?
 (defn serialize
   "Serializes a function call into a hash-map."
   [function-call & args]

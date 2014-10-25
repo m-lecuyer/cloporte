@@ -8,7 +8,7 @@
   "Starts a worker with n threads, on a given queue."
   ([nthreads] (start-worker nthreads :default))
   ([nthreads queue]
-   (redis-mq/worker nil (str (or queue :default))
+   (redis-mq/worker nil (name (or queue :default))
                     {:handler (fn [{:keys [message attempt]}]
                                   (s/perform-job message)
                                   {:status :success})

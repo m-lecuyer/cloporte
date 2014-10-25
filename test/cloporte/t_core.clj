@@ -4,6 +4,7 @@
             [cloporte.worker :as worker]
             [cloporte.serializer :as s]
             [cloporte.job-queue :as q]
+            [cloporte.helpers :as helpers]
             [cloporte.helpers.functions :as fns]
             [clojure.data.json :as json] :reload))
 
@@ -38,7 +39,7 @@
 
 (facts "about performing a job through serialization"
        (with-redefs  ;; /!\ careful, not parallelizable
-         [q/enqueue-job (fn [opts json] json)]  ;; to json instead of enqueue
+         [helpers/redis-enqueue (fn [opts json] json)]  ;; to json instead of enqueue
          (fact "it works end to end with namespaces and arguments"
                (s/perform-job (core/perform-async (foo))) => "default"
                (s/perform-job (core/perform-async (cloporte.t-core/foo "bar"))) => "bar"
@@ -67,9 +68,9 @@
        (fact "it enqueues the jobs"
              (do (reset-result!)
                  (do-async jobs)  ;; populate queue
-                 (worker/queued-messages ":default")) => (reduce + (vals jobs)))
+                 (worker/queued-messages "default")) => (reduce + (vals jobs)))
        (fact "it consumes all the jobs once"
              (let [worker (worker/start-worker 4)]
-               (while (not (worker/queue-empty? ":default")) (Thread/sleep 200))
+               (while (not (worker/queue-empty? "default")) (Thread/sleep 200))
                (worker/stop-worker worker)
                @result) => jobs))
