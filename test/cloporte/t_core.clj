@@ -3,7 +3,6 @@
   (:require [cloporte.core :as core]
             [cloporte.worker :as worker]
             [cloporte.serializer :as s]
-            [cloporte.job-queue :as q]
             [cloporte.helpers :as helpers]
             [cloporte.helpers.functions :as fns]
             [clojure.data.json :as json] :reload))
