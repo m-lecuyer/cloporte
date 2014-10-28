@@ -18,3 +18,12 @@
   (require (symbol (:ns job)))
   (apply (resolve (symbol (:ns job) (:fn job)))
          (reverse (into () (:args job)))))
+
+;; TODO error checking and handle/return errors
+(defmacro perform-async
+  "Enqueues the job on cloporte's redis queue."
+  [qname function-call failure-callback]
+  ;; save function symbol, eval args, serialize and queue
+  `(queue/redis-enqueue
+    (or ~qname :default)
+    (job/serialize (quote ~(first function-call)) ~@(rest function-call))))

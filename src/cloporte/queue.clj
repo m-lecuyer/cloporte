@@ -16,9 +16,8 @@
 
 (defn redis-enqueue
   "Enqueues message in queues, in configured Redis."
-  [options message]
-  (let [queue (or (:queue options) :default)]
-    (redis-query (redis-mq/enqueue (name queue) message))))
+  [qname message]
+    (redis-query (redis-mq/enqueue (name qname) message)))
 
 (defmacro redis-worker
   "Starts a multi-threaded worker to consume jobs from agiven queue."
