@@ -1,9 +1,8 @@
 (ns cloporte.t-core
   (:use midje.sweet)
   (:require [cloporte.core :as core]
-            [cloporte.worker :as worker]
-            [cloporte.serializer :as s]
-            [cloporte.helpers :as helpers]
+            [cloporte.job :as job]
+            [cloporte.queue :as queue]
             [cloporte.helpers.functions :as fns]
             [clojure.data.json :as json] :reload))
 
@@ -11,15 +10,15 @@
 
 (facts "about the `serialize` function"
        (fact "it returns right function, namespace and arguments"
-             (s/serialize 'foo "bar")
+             (job/serialize 'foo "bar")
              => {:ns   "cloporte.t-core"
                  :fn   "foo"
                  :args ["bar"]}
-             (s/serialize 'cloporte.helpers.functions/foo)
+             (job/serialize 'cloporte.helpers.functions/foo)
              => {:ns   "cloporte.helpers.functions"
                  :fn   "foo"
                  :args []}
-             (s/serialize 'fns/foo "bar" "baz" 3)
+             (job/serialize 'fns/foo "bar" "baz" 3)
              => {:ns   "cloporte.helpers.functions"
                  :fn   "foo"
                  :args ["bar" "baz" 3]}))
@@ -29,21 +28,21 @@
 
 (facts "about the `perform-job` function"
        (fact "it executes the job properly with namespace and args"
-             (s/perform-job {:ns   "cloporte.t-core"
+             (job/perform-job {:ns   "cloporte.t-core"
                              :fn   "foo"
                              :args ["bar"]}) => "bar"
-             (s/perform-job {:ns   "cloporte.helpers.functions"
+             (job/perform-job {:ns   "cloporte.helpers.functions"
                              :fn   "foo"
                              :args ["bar" 4]}) => "barbarbarbar"))
 
 (facts "about performing a job through serialization"
        (with-redefs  ;; /!\ careful, not parallelizable
-         [helpers/redis-enqueue (fn [opts json] json)]  ;; to json instead of enqueue
+         [queue/redis-enqueue (fn [opts json] json)]  ;; to json instead of enqueue
          (fact "it works end to end with namespaces and arguments"
-               (s/perform-job (core/perform-async (foo))) => "default"
-               (s/perform-job (core/perform-async (cloporte.t-core/foo "bar"))) => "bar"
-               (s/perform-job (core/perform-async (fns/foo "bar" 3))) => "barbarbar"
-               (s/perform-job (core/perform-async (cloporte.helpers.functions/foo "bar")))
+               (job/perform-job (core/perform-async (foo))) => "default"
+               (job/perform-job (core/perform-async (cloporte.t-core/foo "bar"))) => "bar"
+               (job/perform-job (core/perform-async (fns/foo "bar" 3))) => "barbarbar"
+               (job/perform-job (core/perform-async (cloporte.helpers.functions/foo "bar")))
                => "arg: bar")))
 
 (def jobs {"a" 2 "b" 3 "c" 1})
@@ -67,9 +66,9 @@
        (fact "it enqueues the jobs"
              (do (reset-result!)
                  (do-async jobs)  ;; populate queue
-                 (worker/queued-messages "default")) => (reduce + (vals jobs)))
+                 (queue/queued-messages "default")) => (reduce + (vals jobs)))
        (fact "it consumes all the jobs once"
-             (let [worker (worker/start-worker 4)]
-               (while (not (worker/queue-empty? "default")) (Thread/sleep 200))
-               (worker/stop-worker worker)
+             (let [worker (queue/start-worker 4)]
+               (while (not (queue/queue-empty? "default")) (Thread/sleep 200))
+               (queue/stop-worker worker)
                @result) => jobs))
