@@ -62,7 +62,7 @@
     (dotimes [n (get work k)]
       (core/perform-async (increment k)))))
 
-(facts "about performing a job through serialization and a redis queue"
+(facts "about performing a job end to end"
        (fact "it enqueues the jobs"
              (do (reset-result!)
                  (do-async jobs)  ;; populate queue
